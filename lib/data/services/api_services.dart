@@ -54,11 +54,11 @@ class ApiServices {
   }
 
   //List all meal categories
-  Future<CategoryData> fetchCategoryData() async {
+  Future<List<Category>> fetchCategoryData() async {
     try {
       final response = await dio.get("$baseUrl/categories.php");
       if (response.statusCode == 200) {
-        return CategoryData.fromJson(response.data);
+        return CategoryData.fromJson(response.data).categories;
       } else {
         throw Exception("Failed to fetch category data");
       }

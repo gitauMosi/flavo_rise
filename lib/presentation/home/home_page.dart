@@ -1,48 +1,33 @@
 
-import 'package:flavo_rise/data/models/meal.dart';
-import 'package:flavo_rise/data/services/api_services.dart';
+import 'package:flavo_rise/providers/category_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class HomePage extends StatefulWidget {
+import '../../providers/meal_provider.dart';
+
+class HomePage extends ConsumerWidget {
   const HomePage({super.key});
 
   @override
-  State<HomePage> createState() => _HomePageState();
-}
-
-class _HomePageState extends State<HomePage> {
-    List<Meal?>? mealdataList;
-    bool isLoading = false;
-  @override
-  void initState() {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final categoryAsyncValue = ref.watch(categoryProvider);
+    final mealAsyncValue = ref.watch(mealProvider("Beef"));
     
-    super.initState();
-    fetchCategoryData();
-  }
-
-  void fetchCategoryData() async {
-   setState(() {
-      isLoading = true;
-   });
-    mealdataList = await ApiServices().filterByIngredient("chicken_breast");
-    setState(() {
-      isLoading = false;
-    });
-  }
-  @override
-  Widget build(BuildContext context) {
     return Scaffold(
       body: Center(
-        child: isLoading ?
-         CircularProgressIndicator() 
-         : SizedBox(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(mealdataList!.length.toString() ?? "Unknown")
-            ],
-          ),
-         )
+        child: mealAsyncValue.when(
+          data: (meals){
+            return ListView.builder(
+              itemCount: meals.length,
+              itemBuilder: (contex, index){
+                return ListTile(
+                  title: Text(meals[index].strMeal ?? "Unknown"),
+                );
+              });
+          },
+          error: (error, stack) => Text("Something went wrong"), 
+           loading: ()=> CircularProgressIndicator())
+           
       ),
      );
   }
